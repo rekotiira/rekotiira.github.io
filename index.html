@@ -1,0 +1,634 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+
+        <title>Node.js - Asynchronous, event-driven framework</title>
+
+        <meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+        <meta name="author" content="Hakim El Hattab">
+
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+        <link rel="stylesheet" href="css/reveal.css">
+        <link rel="stylesheet" href="css/theme/league.css" id="theme">
+
+        <!-- Code syntax highlighting -->
+        <link rel="stylesheet" href="lib/css/zenburn.css">
+
+        <!-- Printing and PDF exports -->
+        <script>
+            var link = document.createElement( 'link' );
+            link.rel = 'stylesheet';
+            link.type = 'text/css';
+            link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+            document.getElementsByTagName( 'head' )[0].appendChild( link );
+        </script>
+
+        <!--[if lt IE 9]>
+        <script src="lib/js/html5shiv.js"></script>
+        <![endif]-->
+    </head>
+
+    <body>
+
+        <div class="reveal">
+
+            <!-- Any section element inside of this container is displayed as a slide -->
+            <div class="slides">
+                <section>
+                    <h1>Node.js</h1>
+                    <h3>Asynchronous, event-driven framework</h3>
+                    <p>
+                        <small>by <a>Reko Tiira</></a></small>
+                    </p>
+                </section>
+
+                <section>
+                    <h2>What is Node.js?</h2>
+                    <ul>
+                        <li class="fragment">Based on Google's V8 javascript engine</li>
+                        <li class="fragment">
+                            Node.js v4.1 supports many ES6 features
+                            <ul>
+                                <li class="fragment">let &amp; const variables</li>
+                                <li class="fragment">Arrow functions</li>
+                                <li class="fragment">Promises</li>
+                                <li class="fragment">Classes</li>
+                                <li class="fragment">Collections (Map, WeakMap, Set, WeakSet)</li>
+                                <li class="fragment">Generators</li>
+                                <li class="fragment">Symbols</li>
+                            </ul>
+                        </li>
+                        <li class="fragment">Compiles to native machine code</li>
+                        <li class="fragment">Application code runs in a single thread</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>Why should I use it?</h2>
+                    <ul>
+                        <li class="fragment">It's <strong>fast</strong></li>
+                        <li class="fragment">Awesome package manager</li>
+                        <li class="fragment">Large community</li>
+                        <li class="fragment">You can write isomorphic JS</li>
+                        <li class="fragment">Scales really well</li>
+                        <li class="fragment">It's portable</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <section>
+                        <h2>How it works</h2>
+                        <p class="fragment">Non-blocking I/O model</p>
+                        <pre class="fragment"><code data-trim contenteditable class="javascript">
+var data = fs.readFileSync('./data.json');
+console.log(data);
+                        </code></pre>
+                        <small class="fragment">vs</small>
+                        <pre class="fragment"><code data-trim contenteditable class="javascript">
+fs.readFile('./data.json', (err, data) => {
+    if (!err) {
+        console.log(data);
+    }
+});
+                        </code></pre>
+                    </section>
+                    <section>
+                        <h2>How it works</h2>
+                        <div class="fragment"><small>Node keeps running as long as there are callbacks to be performed</small></div>
+                        <pre class="fragment"><code data-trim contenteditable class="javascript">
+setTimeout(() => {
+    console.log('exit after this')
+}, 1000);
+                        </code></pre>
+                        <div class="fragment"><small>Event loop hidden from the user</small></div>
+                        <div class="fragment"><small>Essentially works the same way the browser JS does</small></div>
+                    </section>
+                </section>
+                <section>
+                    <section>
+                        <p>Let's review a fundamental difference between Node.js and Apache + PHP</p>
+                    </section>
+                    <section>
+                        <p>First some background information about how Apache handles requests</p>
+                        <ul><small>
+                            <li class="fragment">Apache spawns workers (processes and/or threads) that deal with requests</li>
+                            <li class="fragment">Number of workers is the maximum amount of requests that can be processed concurrently</li>
+                            <li class="fragment">If all workers are active when a new request arrives, it is queued</li>
+                            <li class="fragment">There is a limit for the queue, after which incoming requests are rejected</li>
+                            <li class="fragment">When worker finishes processing a request, it takes next request from the wait queue</li>
+                        </small></ul>
+                    </section>
+                    <section>
+                        <img src="ApachePHP.png">
+                    </section>
+                    <section>
+                        <p>Now consider this piece of code</p>
+                        <pre class="fragment"><code data-trim contenteditable class="php">
+$tweets = getTweets();
+echo json_encode($tweets);
+                        </code></pre>
+                        <ul><small>
+                            <li class="fragment">There is a call to an external API</li>
+                            <li class="fragment">We don't control how fast the API responds, it can be <strong>slow</strong> or even <strong>unresponsive</strong></li>
+                            <li class="fragment">If there are 10 requests waiting for the API call to finish, those workers are blocked from processing other requests</li>
+                            <li class="fragment">The workers are not utilizing the server's processing power in any way, they're simply waiting for an external resource</li>
+                            <li class="fragment">The problem is not limited to external APIs, we have the same issue on a smaller scale with e.g. database queries, especially if the database rests on another server in the cluster</li>
+                            <li class="fragment">This is <strong>inefficient</strong>. Why don't we do something useful while waiting for the external resource?</li>
+                        </small></ul>
+                    </section>
+                </section>
+                <section>
+                    <section>
+                        <h3>Why is Node.js better?</h3>
+                        <ul><small>
+                            <li class="fragment">There are no workers or other artificial limits on number of concurrent requests</li>
+                            <li class="fragment">Whenever you do I/O in your code, it is done in the background by Node.js</li>
+                            <li class="fragment">You provide a callback that is called when the I/O is finished</li>
+                            <li class="fragment">No other requests or application code is blocked while waiting for the callback</li>
+                            <li class="fragment">Any system that takes input and processes it somehow to produce output does I/O</li>
+                            <li class="fragment">
+                                There are different types of I/O, the most common ones being:
+                                <ul>
+                                    <li class="fragment">File I/O</li>
+                                    <li class="fragment">Database I/O</li>
+                                    <li class="fragment">Network I/O</li>
+                                </ul>
+                            </li>
+                            <li class="fragment">In most web applications, I/O takes bulk of the time in any given request</li>
+                        </small></ul>
+                    </section>
+                    <section>
+                        <p><strong>The principle of Node.js is that I/O is slow, and what happens inbetween is fast</strong></p>
+                    </section>
+                    <section>
+                        <h3>But if it runs on a single thread it doesn't scale on multi-core processors!?!</h3>
+                        <ul><small>
+                            <li class="fragment">Just run multiple instances of Node.js, e.g. 4 instances on 4-core CPU</li>
+                            <li class="fragment">Node.js has facilities to make this easy: <a href="https://nodejs.org/api/cluster.html">cluster</a> &amp; <a href="https://nodejs.org/api/process.html">process</a> modules</li>
+                            <li class="fragment">Or manage the instances outside of Node.js and run a load balancer<br>such as nginx or haproxy on front</li>
+                        </small></ul>
+                    </section>
+                </section>
+                <section>
+                    <section>
+                        <p>Let's see some code</p>
+                    </section>
+                    <section>
+                        <h3>Synchronous code is easy to understand</h3>
+                        <pre class="fragment"><code data-trim contenteditable class="javascript">
+var tweets = getTweetsSync();
+var fbPosts = getFbPostsSync();
+var igMedia = getInstagramMediaSync();
+
+generateSocialMediaWall(tweets, fbPosts, igMedia);
+                        </code></pre>
+                        <small class="fragment">but...</small>
+                        <p class="fragment"><small>Why should we wait for tweets before getting FB posts and IG media?</small></p>
+                    </section>
+                    <section><h1>We shouldn't</h1></section>
+                    <section>
+                        <h3>Going asynchronous</h3>
+                        <pre class="fragment"><code data-trim contenteditable class="javascript">
+var tweets, fbPosts;
+getTweets((err, tweets_) => {
+    tweets = tweets_
+});
+getFbPosts((err, fbPosts_) => {
+    fbPosts = fbPosts_
+});
+getInstagramMedia((err, igMedia) => {
+    generateSocialMediaWall(tweets, fbPosts, igMedia);
+});
+                        </code></pre>
+                        <small class="fragment"><strong>Race condition!</strong></small>
+                    </section>
+                    <section>
+                        <p>A common task in asynchronous programming is to make sure a number of asynchronous tasks are finished before doing something</p>
+                    </section>
+                    <section>
+                        <pre><code data-trim contenteditable class="javascript">
+var tweets, fbPosts, igMedia;
+var generateSocialMediaWallWhenReady = () => 
+    if (tweets &amp;&amp; fbPosts &amp;&amp; igPosts)
+        generateSocialMediaWall(tweets, fbPosts, igMedia);
+
+getTweets((err, tweets_) => {
+    tweets = tweets_;
+    generateSocialMediaWallWhenReady();
+});
+getFbPosts((err, fbPosts_) => {
+    fbPosts = fbPosts_;
+    generateSocialMediaWallWhenReady();
+});
+getInstagramMedia((err, igMedia_) => {
+    igMedia = igMedia_;
+    generateSocialMediaWallWhenReady();
+});
+                        </code></pre>
+                    </section>
+                    <section>
+                        <h1>Ugh :(</h1>
+                    </section>
+                    <section>
+                        <p>There are number of ways to write more readable asynchronous code</p>
+                    </section>
+                    <section>
+                        <div>
+                            <h3>Using the <a href="https://www.npmjs.com/browse/keyword/async">async</a> library</h3>
+                            <pre class="fragment"><code data-trim contenteditable class="javascript">
+async.parallel(
+    [getTweets, getFbPosts, getInstagramMedia],
+    (err, results) =>
+        generateSocialMediaWall(
+            results[0], // tweets
+            results[1], // fb posts
+            results[2]  // ig media
+        ));
+                            </code></pre>
+                        </div>
+                    </section>
+                    <section>
+                        <div>
+                            <h3>With promises</h3>
+                            <pre class="fragment"><code data-trim contenteditable class="javascript">
+Promise.all([getTweets, getFbPosts, getInstagramMedia])
+    .then(results =>
+        generateSocialMediaWall(
+            results[0], // tweets
+            results[1], // fb posts
+            results[2]  // ig media
+        ));
+                            </code></pre>
+                        </div>
+                    </section>
+                </section>
+                <section>
+                    <section>
+                        <h2>Let's talk more about promises</h2>
+                        <ul>
+                            <li class="fragment">Solves the common issue of callback hell</li>
+                            <li class="fragment">Part of ECMAScript 6</li>
+                            <li class="fragment">
+                                Number of other promise libraries available:
+                                <ul>
+                                    <li class="fragment">Q</li>
+                                    <li class="fragment">bluebird</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </section>
+                    <section>
+                        <h2>What is a promise?</h2>
+                        <p class="fragment"><small>An operation that will complete sometime in the future</small></p>
+                        <pre class="fragment"><code data-trim contenteditable class="javascript">
+function timeoutPromise(delay) {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => resolve(), delay);
+    });
+}
+var waitOneSecond = timeoutPromise(1000);
+console.log(waitOneSecond);
+// outputs: Promise { &lt;pending&gt; }
+                        </code></pre>
+                    </section>
+                    <section>
+                        <p>How to do something when a promise succeeds?</p>
+                        <pre class="fragment"><code data-trim contenteditable class="javascript">
+var waitOneSecond = timeoutPromise(1000);
+waitOneSecond.then(() => {
+    console.log('a second is gone');
+});
+                        </code></pre>
+                        <p class="fragment"><small>But there's no error variable to the callback. How do we handle errors?</small></p>
+                        <pre class="fragment"><code data-trim contenteditable class="javascript">
+var waitOneSecond = timeoutPromise(1000);
+waitOneSecond.catch(err => {
+    console.log('something went wrong');
+});
+                        </code></pre>
+                    </section>
+                    <section>
+                        <h2>Example of a callback hell</h2>
+                        <pre class="fragment"><code data-trim contenteditable class="javascript">
+getUser(username, (err, user) => {
+    getTweets(user.followedTags, (err, tweets) => {
+        renderTweets(tweets, (err, output) => {
+            sendOutputToBrowser(output);
+        });
+    });
+});
+                        </code></pre>
+                    </section>
+                    <section>
+                        <h2>Thinking in promises</h2>
+                        <pre class="fragment"><code data-trim contenteditable class="javascript">
+getUser(username)
+    .then(user => getTweets(user.followedTags))
+    .then(tweets => renderTweets(tweets))
+    .then(output => sendOutputToBrowser(output));
+                        </code></pre>
+                        <ul><small>
+                            <li class="fragment">Promises can be nested and chained</li>
+                            <li class="fragment">Logical structuring of code, makes code re-use easy</li>
+                        </small></ul>
+                    </section>
+                    <section>
+                        <h2>Promises also make error handling a lot easier</h2>
+                    </section>
+                    <section>
+                        <p>Problem with try/catch in asynchronous code</p>
+                        <pre class="fragment"><code data-trim contenteditable class="javascript">
+try {
+    getUser(username, (err, user) => {
+        if (err) throw err;
+    });
+} catch (err) {
+    console.error(err);
+}
+                        </code></pre>
+                        <p class="fragment"><small>When the getUser() callback is called, we're already outside of the try scope, hence this error is never caught and will instead result in termination of the program</small></p>
+                    </section>
+                    <section>
+                        <p>How do we do it then?</p>
+                        <p class="fragment"><small>If we want to deal with the error outside of the scope of the function, we need to pass it to an outside function</small></p>
+                        <pre class="fragment"><code data-trim contenteditable class="javascript">
+function errorHandler(err) {
+    console.error(err);
+}
+
+getUser(username, (err, user) => {
+    if (err) errorHandler(err);
+    else {
+        // ...
+    }
+});
+                        </code></pre>
+                    </section>
+                    <section>
+                        <p>You need to be careful when calling synchronous function in asynchronous code</p>
+                        <pre class="fragment"><code data-trim contenteditable class="javascript">
+getJsonFromApi((json, err) => {
+    var data = JSON.parse(json);
+    // ...
+});
+                        </code></pre>
+                        <p class="fragment"><small>If json is malformed, JSON.parse will throw an exception and your application will terminate</small></p>
+                        <pre class="fragment"><code data-trim contenteditable class="javascript">
+getJsonFromApi((json, err) => {
+    try {
+        var data = JSON.parse(json);
+    } catch (err) {
+        // deal with parse error
+    }
+});
+                        </code></pre>
+                    </section>
+                    <section>
+                        <p>Let's add error handling to the callback hell example</p>
+                        <pre class="fragment"><code data-trim contenteditable class="javascript">
+function errorHandler(err) {
+    console.error(err);
+}
+
+getUser(username, (err, user) => {
+    if (err) errorHandler(err);
+    else getTweets(user.followedTags, (err, tweets) => {
+        if (err) errorHandler(err);
+        else renderTweets(tweets, (err, output) => {
+            if (err) errorHandler(err);
+            else sendOutputToBrowser(output);
+        });
+    });
+});
+                        </code></pre>
+                    </section>
+                    <section>
+                        <h1>Ugh :(</h1>
+                    </section>
+                    <section>
+                        <h3>Error handling with promises</h3>
+                        <pre class="fragment"><code data-trim contenteditable class="javascript">
+getUser(username)
+    .then(user => getTweets(user.followedTags))
+    .then(tweets => renderTweets(tweets))
+    .then(output => sendOutputToBrowser(output))
+    .catch(err => console.error(err));
+                        </code></pre>
+                        <ul><small>
+                            <li class="fragment">Errors propagate down the promise chain much like how exceptions work</li>
+                            <li class="fragment">You can also attach error handlers in middle of the chain</li>
+                            <li class="fragment">If you throw an exception inside a promise, it is automatically turned into a rejected promise</li>
+                        </small></ul>
+                    </section>
+<section>
+                        <p>JSON.parse() revisited</p>
+                        <pre class="fragment"><code data-trim contenteditable class="javascript">
+getJsonFromApi()
+    .then(json => JSON.parse(json))
+    .then(data => { /* ... */ })
+    .catch(SyntaxError, err => console.error('JSON error: ' + err))
+    .catch(err => console.error('Error: ' + err));
+                        </code></pre>
+                        <ul><small>
+                            <li class="fragment">You can return plain values in a then callback, it'll automatically turn the value into a resolved promise, eg. same as doing return Promise.resolve(JSON.parse(json))</li>
+                            <li class="fragment">Promise.catch(ErrorClass, handler) is not part of ES6</li>
+                        </small></ul>
+                    </section>
+                    <section>
+                        <p>Let's examine a more advanced problem</p>
+                        <pre class="fragment"><code data-trim contenteditable class="javascript">
+getUser(username)
+    .then(user => getTweets(user.followedTags))
+    .then(tweets => sendTweetsViaEmail(user.email, tweets))
+    .catch(err => console.error(err));
+                        </code></pre>
+                        <p class="fragment"><small>The second success callback in the chain tries to access user.email, but user is scoped to the first callback only.</small></p>
+                    </section>
+                    <section>
+                        <p>Do we solve it like this?</p>
+                        <pre class="fragment"><code data-trim contenteditable class="javascript">
+getUser(username)
+    .then(user => {
+        return getTweets(user.followedTags)
+            .then(tweets => sendTweetsViaEmail(user.email, tweets));
+    })
+    .catch(err => console.error(err));
+                        </code></pre>
+                        <p class="fragment"><small>Do we really have to go back to the callback hell?</small></p>
+                    </section>
+                    <section>
+                        <h1>No</h1>
+                    </section>
+                    <section>
+                        <h2>Spread to the rescue</h2>
+                        <pre class="fragment"><code data-trim contenteditable class="javascript">
+getUser(username)
+    .then(user => [user, getTweets(user.followedTags)])
+    .spread((user, tweets) => sendTweetsViaEmail(user.email, tweets))
+    .catch(err => console.error(err));
+                        </code></pre>
+                        <p class="fragment"><small>Promise.spread is not supported by ES6 promises.</small></p>
+                        <pre class="fragment"><code data-trim contenteditable class="javascript">
+getUser(username)
+    .then(user => Promise.all([user, getTweets(user.followedTags)]))
+    .then(result => sendTweetsViaEmail(result[0].email, result[1]))
+    .catch(err => console.error(err));
+                        </code></pre>
+                    </section>
+                    <section>
+                        <h2>Promises + generators</h2>
+                        <ul><small>
+                            <li class="fragment">Generators allow you to exit a function in the middle</li>
+                            <li class="fragment">You can re-enter the function later on, optionally passing it a value</li>
+                            <li class="fragment">For example to generate a range of numbers:</li>
+                        </small></ul>
+                        <pre class="fragment"><code data-trim contenteditable class="javascript">
+function* rangeGenerator(start, end) {
+    for (var i = start; i &lt;= end; i++) {
+        yield i;
+    }
+}
+var gen = rangeGenerator(1,3);
+console.log(gen.next().value); // 1
+console.log(gen.next().value); // 2
+console.log(gen.next().value); // 3
+console.log(gen.next().value); // undefined
+                        </code></pre>
+                    </section>
+                    <section>
+                        <p>So what? What does this have to do with promises?</p>
+                    </section>
+                    <section>
+                        <p>Using a combination of promises and generators we can write code that looks and behaves like synchronous code, but runs asynchronously, getting best of the both worlds</p>
+                    </section>
+                    <section>
+                        <h2>Introducing Promise.coroutine</h2>
+                        <pre class="fragment"><code data-trim contenteditable class="javascript">
+var renderUserTweets = Promise.coroutine(function*(username) {
+    var user = yield getUser(username);
+    var tweets = yield getTweets(user.followedTags);
+    var output = yield renderTweets(tweets);
+    return output;
+});
+
+renderUserTweets(username)
+    .then(output => sendOutputToBrowser(output))
+    .catch(err => console.log('error rendering tweets: ' + err));
+                        </code></pre>
+                        <ul><small>
+                            <li class="fragment">Easy to follow</li>
+                            <li class="fragment">No problems with scoping</li>
+                            <li class="fragment">Full benefits of asynchronous processing</li>
+                            <li class="fragment">Because internally we're still dealing with promises, we can attach success and error<br>handlers like usual</li>
+                            <li class="fragment">Not supported by ES6 promises</li>
+                        </small></ul>
+                    </section>
+                    <section>
+                        <p>This is such an useful pattern, that in ES7 it'll likely to be supported natively without the need of generators or custom coroutine scheduler</p>
+                        <pre class="fragment"><code data-trim contenteditable class="javascript">
+async function renderUserTweets(username) {
+    var user = await getUser(username);
+    var tweets = await getTweets(user.followedTags);
+    var output = await renderTweets(tweets);
+    return output;
+});
+                        </code></pre>
+                    </section>
+                    <section>
+                        <p>What about libraries that don't support promises?</p>
+                        <ul><small>
+                            <li class="fragment">
+                                You can write a light wrapper around the functions you need:
+                                <pre class="fragment"><code data-trim contenteditable class="javascript">
+function getTweetsAsync() {
+    return Promise((resolve, reject) => {
+        getTweets.apply(null, arguments, (err, tweets) => {
+            if (err) reject(err);
+            else resolve(tweets);
+        });
+    });
+}
+                                </code></pre>
+                            </li>
+                            <li class="fragment">
+                                Or you can use your favorite promise library's promisify features:
+                                <pre class="fragment"><code data-trim contenteditable class="javascript">
+// promisify a single function
+var getTweetsAsync = Promise.promisify(getTweets);
+                                </code></pre>
+                                <pre class="fragment"><code data-trim contenteditable class="javascript">
+// promisify a single function with require
+var readFileAsync = Promise.promisify(require('fs').readFile);
+                                </code></pre>
+                                <pre class="fragment"><code data-trim contenteditable class="javascript">
+// promisify a module
+var fs = require('fs');
+Promise.promisifyAll(fs);
+// you now have fs.readAsync, fs.statAsync, etc.
+                                </code></pre>
+                                <pre class="fragment"><code data-trim contenteditable class="javascript">
+// promisify a module with require
+var fs = Promise.promisifyAll(require('fs'));
+// you now have fs.readAsync, fs.statAsync, etc.
+                                </code></pre>
+                            </li>
+                        </small></ul>
+                    </section>
+                    <section>
+                        <h1>Promises are cool!</h1>
+                    </section>
+                </section>
+                <section>
+                    <h2>Is there anything bad about Node.js?</h2>
+                    <ul>
+                        <li class="fragment">Less isolation compared to e.g. Apache + PHP</li>
+                        <li class="fragment">The asynchronous flow can be harder to understand</li>
+                        <li class="fragment">Error handling not always as straightforward</li>
+                        <li class="fragment">CPU-intensive tasks leave rest of the code waiting</li>
+                    </ul>
+                </section>
+                <section>
+                    <h1>The end</h1>
+                </section>
+            </div>
+        </div>
+
+        <script src="lib/js/head.min.js"></script>
+        <script src="js/reveal.js"></script>
+
+        <script>
+
+            // Full list of configuration options available at:
+            // https://github.com/hakimel/reveal.js#configuration
+            Reveal.initialize({
+                controls: true,
+                progress: true,
+                history: true,
+                center: true,
+
+                transition: 'convex', // none/fade/slide/convex/concave/zoom
+
+                // Optional reveal.js plugins
+                dependencies: [
+                    { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+                    { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+                    { src: 'plugin/zoom-js/zoom.js', async: true },
+                    { src: 'plugin/notes/notes.js', async: true },
+                    // Remote control your reveal.js presentation using a touch device
+                    { src: '//cdn.socket.io/socket.io-1.3.5.js', async: true },
+                    { src: 'plugin/multiplex/client.js', async: true }
+                ]
+            });
+
+        </script>
+
+    </body>
+</html>
