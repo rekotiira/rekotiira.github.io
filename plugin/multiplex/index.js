@@ -7,6 +7,7 @@ var app			= express.createServer();
 var staticDir	= express.static;
 
 io				= io.listen(app);
+io.set('origins', '*');
 
 var opts = {
 	port: 1948,
