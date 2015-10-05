@@ -607,7 +607,7 @@ var fs = Promise.promisifyAll(require('fs'));
             // Full list of configuration options available at:
             // https://github.com/hakimel/reveal.js#configuration
             Reveal.initialize({
-                controls: true,
+                controls: false,
                 progress: true,
                 history: true,
                 center: true,
@@ -627,7 +627,6 @@ var fs = Promise.promisifyAll(require('fs'));
                     { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
                     { src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
                     { src: 'plugin/zoom-js/zoom.js', async: true },
-                    { src: 'plugin/notes/notes.js', async: true },
                     // Remote control your reveal.js presentation using a touch device
                     { src: '//cdn.socket.io/socket.io-1.3.5.js', async: true },
                     { src: 'plugin/multiplex/client.js', async: true }
