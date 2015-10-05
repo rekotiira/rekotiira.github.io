@@ -7,7 +7,6 @@ var app			= express.createServer();
 var staticDir	= express.static;
 
 io				= io.listen(app);
-io.set('origins', '*');
 
 var opts = {
 	port: 1948,
@@ -31,7 +30,7 @@ app.configure(function() {
 });
 
 app.get("/", function(req, res) {
-	res.writeHead(200, {'Content-Type': 'text/html', 'Access-Control-Allow-Origin': '*'});
+	res.writeHead(200, {'Content-Type': 'text/html'});
 	fs.createReadStream(opts.baseDir + '/index.html').pipe(res);
 });
 
