@@ -42,43 +42,68 @@
             <div class="slides">
                 <section>
                     <h1>Node.js</h1>
-                    <h3>Asynchronous, event-driven framework</h3>
+                    <h3>Asynchronous, event-driven framework &amp; runtime environment</h3>
                     <p><small>http://rekotiira.github.io/</small></p>
                 </section>
-
                 <section>
                     <h2>What is Node.js?</h2>
                     <ul>
-                        <li class="fragment">Based on Google's V8 javascript engine</li>
-                        <li class="fragment">
-                            Node.js v4.1 supports many ES6 features
-                            <ul>
-                                <li class="fragment">let &amp; const variables</li>
-                                <li class="fragment">Arrow functions</li>
-                                <li class="fragment">Promises</li>
-                                <li class="fragment">Classes</li>
-                                <li class="fragment">Collections (Map, WeakMap, Set, WeakSet)</li>
-                                <li class="fragment">Generators</li>
-                                <li class="fragment">Symbols</li>
-                            </ul>
-                        </li>
+                        <li class="fragment">Project started in 2009</li>
+                        <li class="fragment">Started by developers at Joyent</li>
+                        <li class="fragment">Based on Google's V8 Javascript engine</li>
                         <li class="fragment">Compiles to native machine code</li>
                         <li class="fragment">Application code runs in a single thread</li>
+                        <li class="fragment">Designed for developing server-side web applications</li>
+                        <li class="fragment">Can also be used for general purpose applications</li>
                     </ul>
                 </section>
-
+                <section>
+                    <h2>Who uses it?</h2>
+                    <ul>
+                        <li class="fragment">IBM</li>
+                        <li class="fragment">Microsoft</li>
+                        <li class="fragment">Yahoo</li>
+                        <li class="fragment">LinkedIn</li>
+                        <li class="fragment">PayPal</li>
+                        <li class="fragment">GoDaddy</li>
+                        <li class="fragment">SAP</li>
+                    </ul>
+                </section>
                 <section>
                     <h2>Why should I use it?</h2>
                     <ul>
                         <li class="fragment">It's <strong>fast</strong></li>
                         <li class="fragment">Awesome package manager</li>
-                        <li class="fragment">Large community</li>
-                        <li class="fragment">You can write isomorphic JS</li>
+                        <li class="fragment">Large and active community</li>
+                        <li class="fragment">
+                            You can write isomorphic JS
+                            <ul>
+                                <li class="fragment">SEO</li>
+                                <li class="fragment">Performance</li>
+                                <li class="fragment">Caching</li>
+                                <li class="fragment">Code re-use</li>
+                            </ul>
+                        </li>
                         <li class="fragment">Scales really well</li>
                         <li class="fragment">It's portable</li>
                     </ul>
                 </section>
-
+                <section>
+                    <h2>Node.js and ES6 support</h2>
+                    <p class="fragment">The following features are enabled by default in Node.js v4.1:</p>
+                    <ul>
+                        <li class="fragment">let &amp; const variables</li>
+                        <li class="fragment">Arrow functions</li>
+                        <li class="fragment">Promises</li>
+                        <li class="fragment">Classes</li>
+                        <li class="fragment">Collections (Map, WeakMap, Set, WeakSet)</li>
+                        <li class="fragment">Generators</li>
+                        <li class="fragment">Enhanced object literals</li>
+                        <li class="fragment">Template strings</li>
+                        <li class="fragment">Typed arrays</li>
+                        <li class="fragment">Symbols</li>
+                    </ul>
+                </section>
                 <section>
                     <section>
                         <h2>How it works</h2>
@@ -160,6 +185,14 @@ echo json_encode($tweets);
                             </li>
                             <li class="fragment">In most web applications, I/O takes bulk of the time in any given request</li>
                         </small></ul>
+                    </section>
+                    <section>
+                        <h3>Why don't we just run a lot of workers in Apache?</h3>
+                        <ul>
+                            <li class="fragment">Every worker, especially prefork processes, take a considerable amount of memory</li>
+                            <li class="fragment">High memory usage can result in swapping, which is very slow</li>
+                            <li class="fragment">Context switches between threads, and especially processes, are expensive</li>
+                        </ul>
                     </section>
                     <section>
                         <p><strong>The principle of Node.js is that I/O is slow, and what happens inbetween is fast</strong></p>
@@ -262,6 +295,16 @@ Promise.all([getTweets, getFbPosts, getInstagramMedia])
             results[1], // fb posts
             results[2]  // ig media
         ));
+                            </code></pre>
+                        </div>
+                    </section>
+                    <section>
+                        <div>
+                            <h3>With observables</h3>
+                            <pre class="fragment"><code data-trim contenteditable class="javascript">
+Bacon.combineAsArray(getTweets, getFbPosts, getInstagramMedia)
+    .onValues((tweets, fbPosts, igMedia) =>
+        generateSocialMediaWall(tweets, fbPosts, igMedia));
                             </code></pre>
                         </div>
                     </section>
@@ -458,10 +501,7 @@ getUser(username)
     })
     .catch(err => console.error(err));
                         </code></pre>
-                        <p class="fragment"><small>Do we really have to go back to the callback hell?</small></p>
-                    </section>
-                    <section>
-                        <h1>No</h1>
+                        <p class="fragment"><small>What if we have a lot of similar dependancies? Do we really have to nest our promises?</small></p>
                     </section>
                     <section>
                         <h2>Spread to the rescue</h2>
@@ -586,6 +626,7 @@ var fs = Promise.promisifyAll(require('fs'));
                     <h2>Is there anything bad about Node.js?</h2>
                     <ul>
                         <li class="fragment">Less isolation compared to e.g. Apache + PHP</li>
+                        <li class="fragment">Memory leaks are harder to deal with</li>
                         <li class="fragment">The asynchronous flow can be harder to understand</li>
                         <li class="fragment">Error handling not always as straightforward</li>
                         <li class="fragment">CPU-intensive tasks leave rest of the code waiting</li>
@@ -605,8 +646,8 @@ var fs = Promise.promisifyAll(require('fs'));
             // Full list of configuration options available at:
             // https://github.com/hakimel/reveal.js#configuration
             Reveal.initialize({
-                controls: false,
-                keyboard: false,
+                controls: true,
+                keyboard: true,
                 progress: true,
                 history: true,
                 center: true,
