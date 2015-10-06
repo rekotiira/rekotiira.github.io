@@ -123,14 +123,16 @@ fs.readFile('./data.json', (err, data) => {
                     </section>
                     <section>
                         <h2>How it works</h2>
-                        <div class="fragment"><small>Node keeps running as long as there are callbacks to be performed</small></div>
+                        <div class="fragment"><small>Node keeps running as long as there are callbacks to be performed:</small></div>
                         <pre class="fragment"><code data-trim contenteditable class="javascript">
 setTimeout(() => {
     console.log('exit after this')
 }, 1000);
                         </code></pre>
-                        <div class="fragment"><small>Event loop hidden from the user</small></div>
-                        <div class="fragment"><small>Essentially works the same way the browser JS does</small></div>
+                        <p class="fragment">
+                            <small>Event loop hidden from the user.</small>
+                            <small class="fragment">Essentially works the same way the browser JS does.</small>
+                        </p>
                     </section>
                 </section>
                 <section>
@@ -187,15 +189,15 @@ echo json_encode($tweets);
                         </small></ul>
                     </section>
                     <section>
+                        <p><strong>The principle of Node.js is that I/O is slow, and what happens inbetween is fast</strong></p>
+                    </section>
+                    <section>
                         <h3>Why don't we just run a lot of workers in Apache?</h3>
                         <ul>
                             <li class="fragment">Every worker, especially prefork processes, take a considerable amount of memory</li>
-                            <li class="fragment">High memory usage can result in swapping, which is very slow</li>
+                            <li class="fragment">High memory usage can result in memory swapping, which is very slow</li>
                             <li class="fragment">Context switches between threads, and especially processes, are expensive</li>
                         </ul>
-                    </section>
-                    <section>
-                        <p><strong>The principle of Node.js is that I/O is slow, and what happens inbetween is fast</strong></p>
                     </section>
                     <section>
                         <h3>But if it runs on a single thread it doesn't scale on multi-core processors!?!</h3>
