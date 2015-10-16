@@ -503,7 +503,7 @@ getUser(username)
     })
     .catch(err => console.error(err));
                         </code></pre>
-                        <p class="fragment"><small>What if we have a lot of similar dependancies? Do we really have to nest our promises?</small></p>
+                        <p class="fragment"><small>What if we have a lot of similar dependencies? Do we really have to nest our promises?</small></p>
                     </section>
                     <section>
                         <h2>Spread to the rescue</h2>
@@ -648,8 +648,8 @@ var fs = Promise.promisifyAll(require('fs'));
             // Full list of configuration options available at:
             // https://github.com/hakimel/reveal.js#configuration
             Reveal.initialize({
-                controls: true,
-                keyboard: true,
+                controls: false,
+                keyboard: false,
                 progress: true,
                 history: true,
                 center: true,
