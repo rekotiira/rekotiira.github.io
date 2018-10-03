@@ -35,6 +35,7 @@
               <li class="fragment">Introduction to Calmm</li>
               <li class="fragment">Hands-on excercises</li>
               <li class="fragment">How to start using Calmm today</li>
+              <li class="fragment">Benefits of Calmm</li>
               <li class="fragment">Painpoints with Calmm</li>
             </ul>
           </section>
@@ -44,7 +45,7 @@
           <ul>
             <li class="fragment">An architecture and a collection of libraries</li>
             <li class="fragment">Declarative and boilerplate-free way to write reactive UIs</li>
-            <li class="fragment">Some of the libraries are React specific, but not all</li>
+            <li class="fragment">Some of the libraries are React specific but not all</li>
             <li class="fragment">Observables are used for dependent computations, Bacon or Kefir</li>
           </ul>
         </section>
@@ -124,7 +125,7 @@ const UselessComponent = ({ observable }) =>
                   </code></pre>
                   <p class="fragment">observable is only subscribed to if the year of linux desktops has been reached.</p>
                 </li>
-                <li class="fragment">Enables you to lazily process dependent computations, which can be quite useful for expensive computations, or computations that may not need to be processed at all.</li>
+                <li class="fragment">Enables you to lazily process dependent computations, which is very useful for expensive computations, or computations that may not need to be processed at all.</li>
                 <li class="fragment">... and you get this without writing a single line of extra code.</li>
               </ul>
             </small>
@@ -154,7 +155,7 @@ const UselessComponent = ({ observable }) =>
               <ul>
                 <li class="fragment">No need for createClass or React.Component</li>
                 <li class="fragment">The function is only called once, on mount</li>
-                <li class="fragment">Eliminates problems with React's functional components (i.e. how ref works)</li>
+                <li class="fragment">Concise components, with a lot of the React boilerplate removed</li>
               </ul>
             </small>
           </section>
@@ -180,8 +181,8 @@ const MultiplyByTwo = ({ number }) => &lt;div&gt;{number.map(it => it * 2)}&lt;/
 import * as U from 'karet.util'
 import * as R from 'kefir.ramda'
 
-const MultiplyByTwoA = ({ number }) => &lt;div&gt;{U.mapValue(it => it * 2)}&lt;/div&gt;
-const MultiplyByTwoB = ({ number }) => &lt;div&gt;{R.multiply(it, 2)}&lt;/div&gt;
+const MultiplyByTwoA = ({ number }) => &lt;div&gt;{U.mapValue(it => it * 2, number)}&lt;/div&gt;
+const MultiplyByTwoB = ({ number }) => &lt;div&gt;{R.multiply(number, 2)}&lt;/div&gt;
               </code></pre>
               <p class="fragment">Works with both!</p>
               <p class="fragment">U.mapValue and R.multiply are <strong>lifted</strong> to work with both plain values and observables.</p>
@@ -237,7 +238,7 @@ const PositiveAndLessThan100 = ({ number }) =&gt; {
 const PositiveAndLessThan100 = ({ number }) =>
   &lt;div&gt;
     Is {number} positive and less than 100:
-    {U.combine([number], number =&gt; (number &gt;= 0 && number &lt; 100) ? 'yes' : 'no')}
+    {U.mapValue(number =&gt; (number &gt;= 0 && number &lt; 100) ? 'yes' : 'no', number)}
   &lt;/div&gt;
               </code></pre>
               <p class="fragment">If you have complex conditions it is sometimes useful to break down the logic into a separate lifted function for readability.</p>
@@ -247,9 +248,9 @@ const PositiveAndLessThan100 = ({ number }) =>
             <small>
               <h3>Examples of lifted utility functions in calmm</h3>
               <ul>
-                <li class="fragment">What you saw in the previous examples was an example of dependent computations.</li>
-                <li class="fragment">When the inputs change, so does the outputs. The output can be a plain value, another component, etc.</li>
-                <li class="fragment">Using observables to specify dependent computations makes your UI consistent. It will always reflect the state of your application.</li>
+                <li class="fragment">What you saw in the previous examples were examples of dependent computations.</li>
+                <li class="fragment">When the inputs change, so do the outputs. The output can be a plain value, another component, etc.</li>
+                <li class="fragment">When the observables change, the dependent computations are re-run, keeping your UI consistent with your application state.</li>
                 <li class="fragment">Even complex and asynchronous computations are quite trivial compared to many other tools.</li>
               </ul>
             </small>
@@ -374,8 +375,15 @@ const obj = Atom({
     bar: [1, 2, 3]
   }
 })
-obj.modify(L.set(['foo', 'bar', 1], 20))
+
+// focus the 2nd element of the foo.bar array
+const slice = obj.view(['foo', 'bar', 1])
+
+slice.set(20)
 obj.get() // { foo: { bar: [ 1, 20, 3 ] }}
+
+slice.modify(R.multiply(2))
+obj.get() // { foo: { bar: [ 1, 40, 3 ] }}
               </code></pre>
             </small>
           </section>
@@ -398,9 +406,9 @@ list.get() // { items: 'z' }
               <div class="fragment">
                 For simple appends Ramda's R.append is usually simpler though
                 <pre><code data-trim class="jsx">
-const list = Atom({ items: ['x', 'y'] })
+const list = Atom(['x', 'y'])
 list.modify(R.append('z')) // list.modify(L.set(L.append, 'z'))
-list.get() // { items: ['x', 'y', 'z'] }
+list.get() // ['x', 'y', 'z']
                 </code></pre>
               </div>
             </small>
@@ -484,7 +492,7 @@ import { Map } from '3rd-party-map'
 
 &lt;Map position={currentPositionAtom} /&gt;
               </code></pre>
-              <p class="fragment">React will throw an error if you try to pass an observale to the Map component, since it doesn't use karet/baret.</p>
+              <p class="fragment">React will throw an error if you try to pass an observable to the Map component, since it doesn't use karet/baret.</p>
               <p class="fragment">Easy way to fix this is using <strong>karet-lift</strong> attribute. <span class="fragment">If the Map component is used a lot, you can also create a lifted version of the component and use that.</span></p>
               <pre class="fragment"><code data-trim class="jsx">
 import * as React from 'karet'
@@ -527,8 +535,10 @@ class ReactComponent extends React.Component {
             <ul>
               <li class="fragment">The least amount of boilerplate or glue code of any UI framework/library/architecture I've ever used. By far.</li>
               <li class="fragment">Super flexible state management with atoms and optics.</li>
+              <li class="fragment">Decomposition of state allows for real plug-and-play components; no need for wiring to any stores or writing actions to update state</li>
+              <li class="fragment">The same state concept used for local and global state. Easy to move state around. Easy to refactor components.</li>
               <li class="fragment">Consistent dependent computations and data immutability eliminates a lot of potential bugs.</li>
-              <li class="fragment">Asynchronous problems are so much easier to solve than with other tools.</li>
+              <li class="fragment">Asynchronous problems are that much easier to solve than with other tools.</li>
               <li class="fragment">Quite easily testable UI code. It is easy to validate changes to atoms passed to components. Separating optics into their own meta models make them also easily testable.</li>
               <li class="fragment">After you get used to the new way of writing components, it is actually very clean and easy to read and understand compared to i.e. class components.</li>
               <li class="fragment">Easy to write efficient UIs due to minimal, incremental VDOM updates.</li>
@@ -545,7 +555,7 @@ class ReactComponent extends React.Component {
                   <li class="fragment">Need to be proficient with observables</li>
                   <li class="fragment">Optics / lenses is a new concept for many</li>
                   <li class="fragment">Can be difficult for non-FP programmers at first</li>
-                  <li class="fragment">The rewards are not instant or obvious to many people; hard to sell</li>
+                  <li class="fragment">The benefits are not instant or obvious to many people; hard to sell</li>
                   <li class="fragment">BUT the things you learn are actually things that are not just specific to Calmm. They will make you a better programmer</li>
                 </ul>
               </li>
