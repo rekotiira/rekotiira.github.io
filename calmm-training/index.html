@@ -70,6 +70,7 @@
     return &lt;div&gt;The time is &lt;strong&gt;{time}&lt;/strong&gt;&lt;/div&gt;
   }
             </code></pre>
+            <p class="fragment">karet and baret hooks into the createElement API of React, which is the reason you need to import React from karet or baret library.</p>
           </section>
           <section>
             <h2>Embedding observables directly into VDOM has a lot of benefits</h2>
@@ -260,7 +261,7 @@ const PositiveAndLessThan100 = ({ number }) =>
             <small>
               <h3>Example of an asynchronous dependent computation</h3>
               <pre><code data-trim class="jsx">
-const Search = ({ text = U.Atom('') }) =&gt; {
+const Search = ({ text = U.atom('') }) =&gt; {
   const getSearchUrl = text =&gt; `https://my.api/search?text=${encodeURIComponent(text)}`
 
   const results = U.thru(
@@ -456,24 +457,107 @@ list.get() // ['x', 'z']
           </small>
         </section>
         <section>
-          <small>
+          <section>
             <h3>Excercise: a simple contact book React application</h3>
-            <p class="fragment">Tasks</p>
-            <ol>
-              <li class="fragment">Create a root atom to hold the contacts. Add some existing entries in the atom to make next tasks easier to develop (name, email, phone).</li>
-              <li class="fragment">Iterate over the contacts atom and render a Contact component for each entry. Decompose the root atom by using lenses.</li>
-              <li class="fragment">Implement logic for adding new contacts at the end of the contact list.</li>
-              <li class="fragment">Make the contacts editable.</li>
-              <li class="fragment">Make the contacts deletable.</li>
-              <li class="fragment">Add footer which displays the total count of contacts.</li>
-            </ol>
-            <p class="fragment">Bonus tasks / home work</p>
-            <ol>
-              <li class="fragment">Add a search text input and filter the visible contacts by it. Persist the search text value in the root atom. <a href="http://npmjs.com/package/partial.lenses">http://npmjs.com/package/partial.lenses</a></li>
-              <li class="fragment">Add validation to the contact editing. Validate the email and phone number. <a href="http://npmjs.com/package/partial.lenses.validation">http://npmjs.com/package/partial.lenses.validation</a></li>
-              <li class="fragment">Persist the root contact atom in local storage. <a href="http://npmjs.com/package/partial.lenses.validation">http://npmjs.com/package/atom.storage</a></li>
-            </ol>
-          </small>
+            <p class="fragment">Open <a href="https://codesandbox.io/s/4wyz1lo5y0" target="_blank">https://codesandbox.io/s/4wyz1lo5y0</a> in your browser and fork it.</p>
+          </section>
+          <section>
+            <h3>Task 1</h3>
+            <p>Re-factor the Contact component to a calmm-style component.</p>
+            <small>
+              <ul>
+                <li>Define the editing state as an atom that is passed via an argument. You can use <a href="https://github.com/calmm-js/karet.util/#U-atom">U.atom</a> from karet.util library instead of having to import kefir.atom only for Atom definition.</li>
+                <li>Use <a href="https://github.com/calmm-js/karet.util/#U-view">U.view</a> to decompose the contact prop into name, phone and email values; it works with plain values as well as atoms (our contacts argument is a plain value for now).</li>
+                <li>Use <a href="https://github.com/calmm-js/karet.util/#U-ifElse">U.ifElse</a> to determine whether the contact is being edited or not.</li>
+              </ul>
+            </small>
+          </section>
+          <section>
+            <h3>Task 2</h3>
+            <p>Re-factor the ContactList component so that it works even if it received contacts as an observable.</p>
+            <small>
+              <ul>
+                <li><a href="https://github.com/calmm-js/karet.util#U-mapElems">U.mapElems</a> works with plain values as well. Our contacts prop is still a plain value for now.</li>
+              </ul>
+            </small>
+          </section>
+          <section>
+            <h3>Task 3</h3>
+            <p>Create a state atom to hold the contacts and pass the contacts element to ContactList component.</p>
+            <small>
+              <ul>
+                <li>Use the existing plain state object as a default value for the atom.</li>
+                <li>You can either use state.view(lens) or U.view(lens, state) to decompose the state atom. When using U.view you never need to worry whether the input is an atom or a plain value.</li>
+                <li>
+                  Show the value of the state atom in a HTML element so you can see how it changes. Add the following to the root App component:
+                  <pre><code data-trim class="js">&lt;pre&gt;{U.stringify(state, null, 2)}&lt;/pre&gt;</code></pre>
+                </li>
+              </ul>
+            </small>
+          </section>
+          <section>
+            <h3>Task 4</h3>
+            <p>Make the contacts actually editable.</p>
+            <small>
+              <ul>
+                <li>By now you have decomposed state all the way down to the Contact component. Implement onChange handler for the text input to update the corresponding atom's value.</li>
+                <li class="fragment">Alternatively you can use a convenient utility component <a href="https://github.com/calmm-js/karet.util/#U-Input">U.Input</a>.</li>
+              </ul>
+            </small>
+          </section>
+          <section>
+            <h3>Task 5</h3>
+            <p>Make the contacts deletable.</p>
+            <small>
+              <ul>
+                <li>Atoms (and LensedAtoms) can easily be <a href="https://github.com/calmm-js/kefir.atom#remove">removed</a>.</li>
+              </ul>
+            </small>
+          </section>
+          <section>
+            <h3>Task 6</h3>
+            <p>Make it possible to add new contacts.</p>
+            <small>
+              <ul>
+                <li>Append an object with default values for name, email and phone at the end of the contacts array in the state atom.</li>
+              </ul>
+            </small>
+          </section>
+          <section>
+            <h3>Task 7</h3>
+            <p>Display the total contact count somewhere.</p>
+            <small>What was the first solution you came up with?</small>
+          </section>
+          <section>
+            <h3>Task 8</h3>
+            <p>Add <strong>"editing"</strong> class to the Contact component root element when editing.</p>
+            <small>
+              <ul>
+                <li class="fragment">Tip: <a href="https://github.com/calmm-js/karet.util#U-cns">U.cns</a> is an useful utility function for this.</li>
+                <li class="fragment">Tip: U.cns is lifted, so you can give observables as inputs. <a href="https://github.com/calmm-js/karet.util#U-when">U.when</a> is quite useful also.</li>
+              </ul>
+            </small>
+          </section>
+          <section>
+            <h3>Task 9</h3>
+            <p>Only allow one contact to be edited at one time.</p>
+            <small>
+              <ul>
+                <li class="fragment">Tip: Persist the editing state of a contact in the contacts atom instead of component local state.</li>
+                <li class="fragment">Tip: In the ContactList component create a derived computation which searches for a contact where the editing is set to true.</li>
+              </ul>
+            </small>
+          </section>
+          <section>
+            <small>
+              <h3>Bonus tasks</h3>
+              <ol>
+                <li class="fragment">Add a search text input and filter the visible contacts by it. Persist the search text value in the root atom. <a href="https://www.npmjs.com/package/partial.lenses#L-filter">L.filter</a> will be useful.</li>
+                <li class="fragment">Add validation to the contact editing. Validate the email and phone number using the <a href="http://npmjs.com/package/partial.lenses.validation">partial.lenses.validation</a> library.</li>
+                <li class="fragment">Persist the root contact atom in local storage using the <a href="http://npmjs.com/package/partial.lenses.validation">atom.storage</a> library.</li>
+              </ol>
+            </small>
+          </section>
         </section>
         <section>
           <section>
