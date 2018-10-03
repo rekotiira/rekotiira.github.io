@@ -258,7 +258,7 @@ const PositiveAndLessThan100 = ({ number }) =>
             <small>
               <h3>Example of an asynchronous dependent computation</h3>
               <pre><code data-trim class="jsx">
-const Search = ({ text }) =&gt; {
+const Search = ({ text = U.Atom('') }) =&gt; {
   const getSearchUrl = text =&gt; `https://my.api/search?text=${encodeURIComponent(text)}`
 
   const results = U.thru(
@@ -460,7 +460,7 @@ list.get() // ['x', 'z']
             </ol>
             <p class="fragment">Bonus tasks / home work</p>
             <ol>
-              <li class="fragment">Add a search text input and filter the visible contacts by it. Persist the search text value in the root atom. <a href="http://npmjs.com/package/partial.lenses">http://npmjs.com/package/partial.lenses.validation</a></li>
+              <li class="fragment">Add a search text input and filter the visible contacts by it. Persist the search text value in the root atom. <a href="http://npmjs.com/package/partial.lenses">http://npmjs.com/package/partial.lenses</a></li>
               <li class="fragment">Add validation to the contact editing. Validate the email and phone number. <a href="http://npmjs.com/package/partial.lenses.validation">http://npmjs.com/package/partial.lenses.validation</a></li>
               <li class="fragment">Persist the root contact atom in local storage. <a href="http://npmjs.com/package/partial.lenses.validation">http://npmjs.com/package/atom.storage</a></li>
             </ol>
