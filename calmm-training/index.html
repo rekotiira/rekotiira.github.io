@@ -112,6 +112,20 @@ const WrappedComponent = connect(mapStateToProps, mapDispatchToProps)(TodoCompon
               <ul>
                 <li class="fragment">Calmm subscribes to your observables when a component is mounted</li>
                 <li class="fragment">... and unsubscribes when unmounted</li>
+                <li class="fragment">
+                  ... but only when the VDOM path is actually being rendered:
+                  <pre class="fragment"><code data-trim>
+const UselessComponent = ({ observable }) =>
+  &lt;div&gt;
+    {new Date().getFullYear() >= YEAR_OF_LINUX_DESKTOPS
+      ? observable
+      : 'The year of the linux desktops is not yet here'}
+  &lt;/div&gt;
+                  </code></pre>
+                  <p class="fragment">observable is only subscribed to if the year of linux desktops has been reached.</p>
+                </li>
+                <li class="fragment">Enables you to lazily process dependent computations, which can be quite useful for expensive computations, or computations that may not need to be processed at all.</li>
+                <li class="fragment">... and you get this without writing a single line of extra code.</li>
               </ul>
             </small>
           </section>
@@ -227,6 +241,50 @@ const PositiveAndLessThan100 = ({ number }) =>
   &lt;/div&gt;
               </code></pre>
               <p class="fragment">If you have complex conditions it is sometimes useful to break down the logic into a separate lifted function for readability.</p>
+            </small>
+          </section>
+          <section>
+            <small>
+              <h3>Examples of lifted utility functions in calmm</h3>
+              <ul>
+                <li class="fragment">What you saw in the previous examples was an example of dependent computations.</li>
+                <li class="fragment">When the inputs change, so does the outputs. The output can be a plain value, another component, etc.</li>
+                <li class="fragment">Using observables to specify dependent computations makes your UI consistent. It will always reflect the state of your application.</li>
+                <li class="fragment">Even complex and asynchronous computations are quite trivial compared to many other tools.</li>
+              </ul>
+            </small>
+          </section>
+          <section>
+            <small>
+              <h3>Example of an asynchronous dependent computation</h3>
+              <pre><code data-trim class="jsx">
+const Search = ({ text }) =&gt; {
+  const getSearchUrl = text =&gt; `https://my.api/search?text=${encodeURIComponent(text)}`
+
+  const results = U.thru(
+    text,
+    U.debounce(300),
+    U.flatMapLatest(text =&gt; U.thru(
+      U.fromPromise(() =&gt; fetch(getSearchUrl(text))),
+      U.startWith(undefined)
+    )),
+    U.startWith([])
+  )
+
+  return (
+    &lt;div&gt;
+      &lt;U.Input value={text} /&gt;
+      {U.ifElse(
+        R.is(Array, results),
+        &lt;ul&gt;
+          {U.mapElems((result, i) =&gt; &lt;li key={i}&gt;{result}&lt;/li&gt;, results)}
+        &lt;/ul&gt;,
+        'Loading'
+      )}
+    &lt;/div&gt;
+  )
+}
+              </code></pre>
             </small>
           </section>
         </section>
@@ -462,6 +520,68 @@ class ReactComponent extends React.Component {
               <p class="fragment">Especially useful with libraries such as react-router.</p>
             </small>
           </section>
+        </section>
+        <section>
+          <small>
+            <h3>Why is Calmm so good?</h3>
+            <ul>
+              <li class="fragment">The least amount of boilerplate or glue code of any UI framework/library/architecture I've ever used. By far.</li>
+              <li class="fragment">Super flexible state management with atoms and optics.</li>
+              <li class="fragment">Consistent dependent computations and data immutability eliminates a lot of potential bugs.</li>
+              <li class="fragment">Asynchronous problems are so much easier to solve than with other tools.</li>
+              <li class="fragment">Quite easily testable UI code. It is easy to validate changes to atoms passed to components. Separating optics into their own meta models make them also easily testable.</li>
+              <li class="fragment">After you get used to the new way of writing components, it is actually very clean and easy to read and understand compared to i.e. class components.</li>
+              <li class="fragment">Easy to write efficient UIs due to minimal, incremental VDOM updates.</li>
+            </ul>
+          </small>
+        </section>
+        <section>
+          <small>
+            <h3>Painpoints with Calmm</h3>
+            <ul>
+              <li class="fragment">
+                Deep(ish) learning curve
+                <ul>
+                  <li class="fragment">Need to be proficient with observables</li>
+                  <li class="fragment">Optics / lenses is a new concept for many</li>
+                  <li class="fragment">Can be difficult for non-FP programmers at first</li>
+                  <li class="fragment">The rewards are not instant or obvious to many people; hard to sell</li>
+                  <li class="fragment">BUT the things you learn are actually things that are not just specific to Calmm. They will make you a better programmer</li>
+                </ul>
+              </li>
+              <li class="fragment">
+                Still relatively young
+                <ul>
+                  <li class="fragment">Small community, can make people wary about future of the project</li>
+                  <li class="fragment">Breaking changes in libraries; not so frequent anymore</li>
+                </ul>
+              </li>
+              <li class="fragment">
+                It is easy to do things the "wrong way"
+                <ul>
+                  <li class="fragment">Documentation has vastly improved recently</li>
+                </ul>
+              </li>
+              <li class="fragment">
+                Debugging issues can be a huge pain
+                <ul>
+                  <li class="fragment">Asynchronous observables in VDOM, stack traces can be very cryptic</li>
+                  <li class="fragment">Performance issues can be hard to debug</li>
+                  <li class="fragment">Lacking tooling of more popular state management libs such as Redux</li>
+                </ul>
+              </li>
+              <li class="fragment">
+                No static type support
+                <ul>
+                  <li class="fragment">Due to the high verbosity and flexibility static typing is difficult (or even impossible) thing to do with current tools</li>
+                </ul>
+              </li>
+            </ul>
+          </small>
+        </section>
+        <section>
+          <h2>So should I use Calmm?</h2>
+          <h1 class="fragment">Yes</h1>
         </section>
       </div>
     </div>
