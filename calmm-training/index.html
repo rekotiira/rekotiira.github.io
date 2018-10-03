@@ -1,0 +1,486 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Calmm training</title>
+
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/black.css">
+
+    <!-- Theme used for syntax highlighting of code -->
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section>
+          <section>
+            <h1>Calmm Training</h1>
+            <p>Join #calmm-training on Slack</p>
+          </section>
+          <section>
+            <h2>Agenda</h2>
+            <ul>
+              <li class="fragment">Introduction to Calmm</li>
+              <li class="fragment">Hands-on excercises</li>
+              <li class="fragment">How to start using Calmm today</li>
+              <li class="fragment">Painpoints with Calmm</li>
+            </ul>
+          </section>
+        </section>
+        <section>
+          <h2>What is Calmm?</h2>
+          <ul>
+            <li class="fragment">An architecture and a collection of libraries</li>
+            <li class="fragment">Declarative and boilerplate-free way to write reactive UIs</li>
+            <li class="fragment">Some of the libraries are React specific, but not all</li>
+            <li class="fragment">Observables are used for dependent computations, Bacon or Kefir</li>
+          </ul>
+        </section>
+        <section>
+          <h2>How is it different from traditional React?</h2>
+        </section>
+        <section>
+          <section>
+            <h3>Observables are embedded directly in the VDOM</h3>
+          </section>
+          <section>
+            <pre><code data-trim class="jsx">
+  import * as React from 'baret' // or karet for Kefir
+
+  const MyComponent = () => {
+    const time = Bacon.once()
+      .merge(Bacon.interval(1000))
+      .map(() => new Date().toString())
+      .toProperty()
+
+    return &lt;div&gt;The time is &lt;strong&gt;{time}&lt;/strong&gt;&lt;/div&gt;
+  }
+            </code></pre>
+          </section>
+          <section>
+            <h2>Embedding observables directly into VDOM has a lot of benefits</h2>
+          </section>
+          <section>
+            <small>
+              <h2>Completely boilerplate-free</h2>
+              <ul>
+                <li class="fragment">State is stored in modifiable and observable atoms (more about this in a minute)</li>
+                <li class="fragment">No glue code needed to transform external state into props or internal React component state</li>
+                <li class="fragment">
+                  No need for
+                  <pre><code data-trim class="js">
+Bacon.combineTemplate({
+  todos: todosProperty,
+  counter: counterProperty
+})
+  .takeUntil(componentUnmountStream)
+  .onValue(state => this.setState(state))
+                  </code></pre>
+                </li>
+                <li class="fragment">
+                  ... or ...
+                  <pre><code data-trim class="js">
+const mapStateToProps = (state, ownProps) => ({
+  todos: state.todos,
+  counter: state.counter
+})
+const mapDispatchToProps = ...
+const WrappedComponent = connect(mapStateToProps, mapDispatchToProps)(TodoComponent)
+                  </code></pre>
+                </li>
+                <li class="fragment">
+                  ... etc.
+                </li>
+              </ul>
+            </small>
+          </section>
+          <section>
+            <small>
+              <h2>Observable life-cycle is automatic</h2>
+              <ul>
+                <li class="fragment">Calmm subscribes to your observables when a component is mounted</li>
+                <li class="fragment">... and unsubscribes when unmounted</li>
+              </ul>
+            </small>
+          </section>
+          <section>
+            <small>
+              <h2>When an observable changes only the relevant part of the VDOM is updated</h2>
+              <pre class="fragment"><code data-trim>
+  const MyComponent = ({ observable }) =>
+    &lt;div&gt;
+      &lt;ComplexComponent /&gt;
+      The value of observable is: &lt;strong&gt;{observable}&lt;/strong&gt;
+    &lt;/div&gt;
+              </code></pre>
+              <ul>
+                <li class="fragment">When observable changes, only the strong element is re-rendered</li>
+                <li class="fragment">Fast incremental VDOM updates</li>
+                <li class="fragment">No need for shouldComponentUpdate</li>
+                <li class="fragment">Eliminates need for render optimization in vast majority of cases</li>
+                <li class="fragment">There are exceptions though</li>
+              </ul>
+            </small>
+          </section>
+          <section>
+            <small>
+              <h3>You can write your components using functional React components</h3>
+              <ul>
+                <li class="fragment">No need for createClass or React.Component</li>
+                <li class="fragment">The function is only called once, on mount</li>
+                <li class="fragment">Eliminates problems with React's functional components (i.e. how ref works)</li>
+              </ul>
+            </small>
+          </section>
+        </section>
+        <section>
+          <section>
+            <h3>Component properties can either be values or observables</h3>
+          </section>
+          <section>
+            <small>
+              <h3>Example: working with values and observables</h3>
+              <pre><code data-trim class="jsx">
+const MultiplyByTwo = ({ number }) => <div>{number * 2}</div>
+              </code></pre>
+              <p class="fragment">Does not work with observables.</p>
+
+              <pre class="fragment"><code data-trim class="jsx">
+const MultiplyByTwo = ({ number }) => <div>{number.map(it => it * 2)}</div>
+              </code></pre>
+              <p class="fragment">Does not work with plain values.</p>
+
+              <pre class="fragment"><code data-trim class="jsx">
+import * as U from 'karet.util'
+import * as R from 'kefir.ramda'
+
+const MultiplyByTwoA = ({ number }) => <div>{U.mapValue(it => it * 2)}</div>
+const MultiplyByTwoB = ({ number }) => <div>{R.multiply(it, 2)}</div>
+              </code></pre>
+              <p class="fragment">Works with both!</p>
+              <p class="fragment">U.mapValue and R.multiply are <strong>lifted</strong> to work with both plain values and observables.</p>
+            </small>
+          </section>
+          <section>
+            <small>
+              <h3>Lifted functions</h3>
+              <ul>
+                <li class="fragment">If you have a function that works with plain values, <strong>lifting</strong> it means that the lifted version can accept plain values and observables as arguments.</li>
+                <li class="fragment">When a lifted function is called with only plain values as arguments, the result is computed immediately and is also a plain value.</li>
+                <li class="fragment">When any of the arguments is an observable, the result is an observable as well.</li>
+                <li class="fragment"><strong>karet.util</strong> (and <strong>baret.util</strong>) contain a lot of useful utility functions, many of which are lifted.</li>
+                <li class="fragment">Calmm also has a few wrapper libraries that lift the functions of the wrapped libraries, i.e. <strong>kefir.ramda</strong> and <strong>kefir.partial.lenses</strong>.</li>
+                <li class="fragment">
+                  It is easy to lift your own functions to work with observables:
+                  <pre class="fragment"><code data-trim class="js">
+import * as U from 'karet.util'
+
+const includes = U.lift((xs, x) => xs.includes(x))
+const obsOfBooleans = includes(obsOfArrays, obsOfValues)
+                  </code></pre>
+                </li>
+              </ul>
+            </small>
+          </section>
+          <section>
+            <small>
+              <h3>Examples of lifted utility functions in calmm</h3>
+              <pre class="fragment"><code data-trim class="jsx">
+const PositiveAndLessThan100 = ({ number }) =>
+  <div>
+    Is {number} positive and less than 100:
+    {U.ifElse(
+      U.and(R.gte(number, 0), R.lt(number, 100)),
+      'yes',
+      'no')}
+  </div>
+              </code></pre>
+              <p class="fragment">Also possible to write</p>
+              <pre class="fragment"><code data-trim class="jsx">
+const PositiveAndLessThan100 = ({ number }) => {
+  const test = U.lift(number => number >= 0 && number < 100)
+  return (
+    <div>
+      Is {number} positive and less than 100: {U.ifElse(test(number), 'yes', 'no')}
+    </div>
+  )
+}
+              </code></pre>
+              <p class="fragment">or</p>
+              <pre class="fragment"><code data-trim class="jsx">
+const PositiveAndLessThan100 = ({ number }) =>
+  <div>
+    Is {number} positive and less than 100:
+    {U.combine([number], number => (number >= 0 && number < 100) ? 'yes' : 'no')}
+  </div>
+              </code></pre>
+              <p class="fragment">If you have complex conditions it is sometimes useful to break down the logic into a separate lifted function for readability.</p>
+            </small>
+          </section>
+        </section>
+        <section>
+          <section>
+            <h2>Atoms</h2>
+            <ul>
+              <li class="fragment">Used to store state</li>
+              <li class="fragment">Atoms are observable (properties)</li>
+              <li class="fragment">Atoms are modifiable (modify / set)</li>
+              <li class="fragment">Stored state is immutable data</li>
+              <li class="fragment">Can be decomposed into smaller slices of state using lenses</li>
+            </ul>
+          </section>
+          <section>
+            <pre><code data-trim class="jsx">
+const Counter = ({ count = Atom(0) }) =>
+  &lt;span&gt;
+    &lt;button onClick={() =&gt; count.modify(R.add(-1))}&gt;-&lt;/button&gt;
+    {count}
+    &lt;button onClick={() =&gt; count.modify(R.add(1))}&gt;+&lt;/button&gt;
+  &lt;/span&gt;
+            </code></pre>
+            <small class="fragment">Having the count atom as a parameter makes it easy to use the component with local or global state</small>
+            <pre class="fragment"><code data-trim class="jsx">
+&lt;Counter /&gt;
+            </code></pre>
+            <pre class="fragment"><code data-trim class="jsx">
+const count = Atom(10)
+&lt;Counter count={count} /&gt;
+            </code></pre>
+          </section>
+          <section>
+            <h2>Lenses & lensed atoms</h2>
+            <ul>
+              <li class="fragment">Lensed atom is a subset of an atom that is decomposed with a lens</li>
+              <li class="fragment">Lensed atoms are observable (properties)</li>
+              <li class="fragment">Lensed atoms are modifiable (modify / set)</li>
+              <li class="fragment">Can be decomposed into even smaller slices using lenses</li>
+              <li class="fragment">Easily build a data structure that follows the structure of your UI</li>
+            </ul>
+          </section>
+          <section>
+            <small>
+              <h3>Example: decompose state to child components</h3>
+              <pre><code data-trim class="jsx">
+const counters = Atom([0, 0, 0])
+
+&lt;Counter count={counters.view(0)} /&gt;
+&lt;Counter count={counters.view(1)} /&gt;
+&lt;Counter count={counters.view(2)} /&gt;
+              </code></pre>
+            </small>
+          </section>
+          <section>
+            <small>
+              <h3>Example: filter a list to only show some elements</h3>
+              <pre><code data-trim class="jsx">
+const todos = Atom([
+  { title: 'Wash laundry', finished: false },
+  { title: 'Buy groceries', finished: true },
+  { title: 'Clean kitchen', finished: false }
+])
+
+const TodoList = ({ todos }) =>
+  &lt;div&gt;
+    &lt;h2&gt;Todo&lt;/h2&gt;
+    {U.mapElems(
+      (todo, i) =&gt; &lt;TodoItem key={i} todo={todo} /&gt;,
+      todos
+    )}
+  &lt;/div&gt;
+
+const UnfinishedTodos = ({ todos }) => {
+  const onlyUnfinishedLens = L.filter(todo => !todo.finished)
+  return &lt;TodoList todos={todos.view(onlyUnfinishedLens)} /&gt;
+}
+              </code></pre>
+            </small>
+          </section>
+          <section>
+            <small>
+              <h3>Example: change a value in an object</h3>
+              <pre><code data-trim class="jsx">
+const obj = Atom({
+  foo: {
+    bar: [1, 2, 3]
+  }
+})
+obj.modify(L.set(['foo', 'bar', 1], 20))
+obj.get() // { foo: { bar: [ 1, 20, 3 ] }}
+              </code></pre>
+            </small>
+          </section>
+          <section>
+            <small>
+              <h3>Example: append a value to a list</h3>
+              <pre><code data-trim class="jsx">
+const list = Atom({ items: ['x', 'y'] })
+list.modify(L.set(['items', L.append], 'z'))
+list.get() // { items: ['x', 'y', 'z'] }
+              </code></pre>
+              <div class="fragment">
+                Without the L.append
+                <pre><code data-trim class="jsx">
+const list = Atom({ items: ['x', 'y'] })
+list.modify(L.set(['items'], 'z'))
+list.get() // { items: 'z' }
+                </code></pre>
+              </div>
+              <div class="fragment">
+                For simple appends Ramda's R.append is usually simpler though
+                <pre><code data-trim class="jsx">
+const list = Atom({ items: ['x', 'y'] })
+list.modify(R.append('z')) // list.modify(L.set(L.append, 'z'))
+list.get() // { items: ['x', 'y', 'z'] }
+                </code></pre>
+              </div>
+            </small>
+          </section>
+          <section>
+            <small>
+              <h3>Example: remove a value from a list</h3>
+              <pre><code data-trim class="jsx">
+const list = Atom(['x', 'y', 'z'])
+list.modify(L.remove(1))
+list.get() // ['x', 'z']
+              </code></pre>
+              <p class="fragment">Lensed atoms can also remove themselves</p>
+              <pre class="fragment"><code data-trim class="jsx">
+const list = Atom(['x', 'y', 'z'])
+const item = list.view(1)
+item.remove()
+list.get() // ['x', 'z']
+              </code></pre>
+              <p class="fragment">This is a very useful pattern when you want to have removable UI components where the remove button is in the removable component itself.</p>
+            </small>
+          </section>
+          <section>
+            <small>
+              <h3>Lenses/optics are very powerful, this is just scratching the surface</h3>
+              <ul>
+                <li class="fragment">Fetch data from API and transform into format that UI expects.</li>
+                <li class="fragment">Make changes via UI, lenses are bidirectional so you can instantly PUT changes back to API. Just define the format of your data via lenses once.</li>
+                <li class="fragment">Define default & required values.</li>
+                <li class="fragment">Not just lenses. Traversals and isomorphisms.</li>
+              </ul>
+            </small>
+          </section>
+        </section>
+        <section>
+          <small>
+            <h3>Calmm libraries we will be using today</h3>
+            <ul>
+              <li class="fragment"><strong>karet</strong> - embedding Kefir observables in React VDOM</li>
+              <li class="fragment"><strong>kefir.atom</strong> - managing the state</li>
+              <li class="fragment"><strong>karet.util</strong> - utilities for karet; today we are mainly interested in U.mapElems for easily iterating over an array of values in atom</li>
+              <li class="fragment"><strong>partial.lenses</strong> - decomposing atoms with lenses</li>
+            </ul>
+          </small>
+        </section>
+        <section>
+          <small>
+            <h3>Excercise: a simple contact book React application</h3>
+            <p class="fragment">Tasks</p>
+            <ol>
+              <li class="fragment">Create a root atom to hold the contacts. Add some existing entries in the atom to make next tasks easier to develop (name, email, phone).</li>
+              <li class="fragment">Iterate over the contacts atom and render a Contact component for each entry. Decompose the root atom by using lenses.</li>
+              <li class="fragment">Implement logic for adding new contacts at the end of the contact list.</li>
+              <li class="fragment">Make the contacts editable.</li>
+              <li class="fragment">Make the contacts deletable.</li>
+              <li class="fragment">Add footer which displays the total count of contacts.</li>
+            </ol>
+            <p class="fragment">Bonus tasks / home work</p>
+            <ol>
+              <li class="fragment">Add a search text input and filter the visible contacts by it. Persist the search text value in the root atom. <a href="http://npmjs.com/package/partial.lenses">http://npmjs.com/package/partial.lenses.validation</a></li>
+              <li class="fragment">Add validation to the contact editing. Validate the email and phone number. <a href="http://npmjs.com/package/partial.lenses.validation">http://npmjs.com/package/partial.lenses.validation</a></li>
+              <li class="fragment">Persist the root contact atom in local storage. <a href="http://npmjs.com/package/partial.lenses.validation">http://npmjs.com/package/atom.storage</a></li>
+            </ol>
+          </small>
+        </section>
+        <section>
+          <section>
+            <h2>How to start using Calmm today</h2>
+            <ul>
+              <li class="fragment">You don't have to use everything, pick the parts that makes your life easier now</li>
+              <li class="fragment">Join #calmm in Slack and calmm-js gitter</li>
+              <li class="fragment">Easy to interop, let's look at some examples</li>
+            </ul>
+          </section>
+          <section>
+            <small>
+              <h2>Example: Using observables with components that don't use karet/baret</h2>
+              <pre class="fragment"><code data-trim class="jsx">
+import * as React from 'karet'
+import { Map } from '3rd-party-map'
+
+&lt;Map position={currentPositionAtom} /&gt;
+              </code></pre>
+              <p class="fragment">React will throw an error if you try to pass an observale to the Map component, since it doesn't use karet/baret.</p>
+              <p class="fragment">Easy way to fix this is using <strong>karet-lift</strong> attribute. <span class="fragment">If the Map component is used a lot, you can also create a lifted version of the component and use that.</span></p>
+              <pre class="fragment"><code data-trim class="jsx">
+import * as React from 'karet'
+import * as U from 'karet.util'
+import { Map } from '3rd-party-map'
+
+const LiftedMap = React.fromClass(Map)
+const LiftedMap2 = U.toKaret(Map) // this does the same
+
+&lt;Map position={currentPositionAtom} karet-lift /&gt;
+&lt;LiftedMap position={currentPositionAtom} /&gt;
+              </code></pre>
+              <p class="fragment">Now the Map component will receive the position as a plain value.</p>
+            </small>
+          </section>
+          <section>
+            <small>
+              <h2>Example: Using calmm components as children of non-calmm components</h2>
+              <p class="fragment">Calmm components should only render when they're mounted. If you're using calmm components as children of a non-calmm component this behavior is likely to break, because the parent container is being re-rendered which also causes the calmm components to re-render.</p>
+              <p class="fragment">karet.util library has an useful utility function U.toReact which converts plain value props into observable props and stops re-rendering of the calmm component.</p>
+              <pre class="fragment"><code data-trim class="jsx">
+import * as U from 'karet.util'
+import CalmmComponent from './components/calmm-component'
+
+const CalmmComponentInterop = U.toReact(CalmmComponent)
+
+class ReactComponent extends React.Component {
+  render() {
+    return &lt;CalmmComponentInterop {...this.props} /&gt;
+  }
+}
+              </code></pre>
+              <p class="fragment">Especially useful with libraries such as react-router.</p>
+            </small>
+          </section>
+        </section>
+      </div>
+    </div>
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+
+    <script>
+      // More info about config & dependencies:
+      // - https://github.com/hakimel/reveal.js#configuration
+      // - https://github.com/hakimel/reveal.js#dependencies
+      Reveal.initialize({
+        dependencies: [
+          { src: 'plugin/markdown/marked.js' },
+          { src: 'plugin/markdown/markdown.js' },
+          { src: 'plugin/notes/notes.js', async: true },
+          { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+        ]
+      });
+    </script>
+  </body>
+</html>
