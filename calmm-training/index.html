@@ -153,12 +153,12 @@ const WrappedComponent = connect(mapStateToProps, mapDispatchToProps)(TodoCompon
             <small>
               <h3>Example: working with values and observables</h3>
               <pre><code data-trim class="jsx">
-const MultiplyByTwo = ({ number }) => <div>{number * 2}</div>
+const MultiplyByTwo = ({ number }) => &lt;div>{number * 2}&lt;/div&gt;
               </code></pre>
               <p class="fragment">Does not work with observables.</p>
 
               <pre class="fragment"><code data-trim class="jsx">
-const MultiplyByTwo = ({ number }) => <div>{number.map(it => it * 2)}</div>
+const MultiplyByTwo = ({ number }) => &lt;div&gt;{number.map(it => it * 2)}&lt;/div&gt;
               </code></pre>
               <p class="fragment">Does not work with plain values.</p>
 
@@ -166,8 +166,8 @@ const MultiplyByTwo = ({ number }) => <div>{number.map(it => it * 2)}</div>
 import * as U from 'karet.util'
 import * as R from 'kefir.ramda'
 
-const MultiplyByTwoA = ({ number }) => <div>{U.mapValue(it => it * 2)}</div>
-const MultiplyByTwoB = ({ number }) => <div>{R.multiply(it, 2)}</div>
+const MultiplyByTwoA = ({ number }) => &lt;div&gt;{U.mapValue(it => it * 2)}&lt;/div&gt;
+const MultiplyByTwoB = ({ number }) => &lt;div&gt;{R.multiply(it, 2)}&lt;/div&gt;
               </code></pre>
               <p class="fragment">Works with both!</p>
               <p class="fragment">U.mapValue and R.multiply are <strong>lifted</strong> to work with both plain values and observables.</p>
@@ -199,32 +199,32 @@ const obsOfBooleans = includes(obsOfArrays, obsOfValues)
               <h3>Examples of lifted utility functions in calmm</h3>
               <pre class="fragment"><code data-trim class="jsx">
 const PositiveAndLessThan100 = ({ number }) =>
-  <div>
+  &lt;div&gt;
     Is {number} positive and less than 100:
     {U.ifElse(
       U.and(R.gte(number, 0), R.lt(number, 100)),
       'yes',
       'no')}
-  </div>
+  &lt;/div&gt;
               </code></pre>
               <p class="fragment">Also possible to write</p>
               <pre class="fragment"><code data-trim class="jsx">
-const PositiveAndLessThan100 = ({ number }) => {
-  const test = U.lift(number => number >= 0 && number < 100)
+const PositiveAndLessThan100 = ({ number }) =&gt; {
+  const test = U.lift(number =&gt; number &gt;= 0 && number &lt; 100)
   return (
-    <div>
+    &lt;div&gt;
       Is {number} positive and less than 100: {U.ifElse(test(number), 'yes', 'no')}
-    </div>
+    &lt;/div&gt;
   )
 }
               </code></pre>
               <p class="fragment">or</p>
               <pre class="fragment"><code data-trim class="jsx">
 const PositiveAndLessThan100 = ({ number }) =>
-  <div>
+  &lt;div&gt;
     Is {number} positive and less than 100:
-    {U.combine([number], number => (number >= 0 && number < 100) ? 'yes' : 'no')}
-  </div>
+    {U.combine([number], number =&gt; (number &gt;= 0 && number &lt; 100) ? 'yes' : 'no')}
+  &lt;/div&gt;
               </code></pre>
               <p class="fragment">If you have complex conditions it is sometimes useful to break down the logic into a separate lifted function for readability.</p>
             </small>
