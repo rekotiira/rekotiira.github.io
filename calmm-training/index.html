@@ -27,7 +27,7 @@
         <section>
           <section>
             <h1>Calmm Training</h1>
-            <p>Join #calmm on Slack</p>
+            <p>https://rekotiira.github.io/calmm-training/</p>
             <small>Reko Tiira</small>
           </section>
           <section>
@@ -47,7 +47,7 @@
             <li class="fragment">An architecture and a collection of libraries</li>
             <li class="fragment">Declarative and boilerplate-free way to write reactive UIs</li>
             <li class="fragment">Some of the libraries are React specific but not all</li>
-            <li class="fragment">Observables are used for dependent computations, Bacon or Kefir</li>
+            <li class="fragment">State is observable. Dependent computations are observable. You can use either Bacon or Kefir.</li>
           </ul>
         </section>
         <section>
@@ -120,12 +120,12 @@ const WrappedComponent = connect(mapStateToProps, mapDispatchToProps)(TodoCompon
                   <pre class="fragment"><code data-trim>
 const UselessComponent = ({ observable }) =>
   &lt;div&gt;
-    {new Date().getFullYear() >= YEAR_OF_LINUX_DESKTOPS
+    {new Date().getFullYear() >= YEAR_OF_LINUX_DESKTOP
       ? observable
-      : 'The year of the linux desktops is not yet here'}
+      : 'The year of the desktop linux desktop is not yet here'}
   &lt;/div&gt;
                   </code></pre>
-                  <p class="fragment">observable is only subscribed to if the year of linux desktops has been reached.</p>
+                  <p class="fragment">observable is only subscribed to if the year of linux desktop has been reached.</p>
                 </li>
                 <li class="fragment">Enables you to lazily process dependent computations, which is very useful for expensive computations, or computations that may not need to be processed at all.</li>
                 <li class="fragment">... and you get this without writing a single line of extra code.</li>
@@ -251,7 +251,7 @@ const PositiveAndLessThan100 = ({ number }) =>
               <h3>Examples of lifted utility functions in calmm</h3>
               <ul>
                 <li class="fragment">What you saw in the previous examples were examples of dependent computations.</li>
-                <li class="fragment">When the inputs change, so do the outputs. The output can be a plain value, another component, etc.</li>
+                <li class="fragment">When the inputs change, so do the outputs. The output can be a plain value, instance of a component, etc.</li>
                 <li class="fragment">When the observables change, the dependent computations are re-run, keeping your UI consistent with your application state.</li>
                 <li class="fragment">Even complex and asynchronous computations are quite trivial compared to many other tools.</li>
               </ul>
@@ -311,7 +311,7 @@ const Counter = ({ count = Atom(0) }) =>
     &lt;button onClick={() =&gt; count.modify(R.add(1))}&gt;+&lt;/button&gt;
   &lt;/span&gt;
             </code></pre>
-            <small class="fragment">Having the count atom as a parameter makes it easy to use the component with local or global (external) state, ultimately making the component more composeable.</small>
+            <small class="fragment">Having the count atom as a parameter makes it easy to use the component with local or global (external) state, making the component more composeable and flexible.</small>
             <pre class="fragment"><code data-trim class="jsx">
 &lt;Counter /&gt;
             </code></pre>
@@ -526,7 +526,7 @@ list.get() // ['x', 'z']
           <section>
             <h3>Task 7</h3>
             <p>Display the total contact count somewhere.</p>
-            <small>What was the first solution you came up with?</small>
+            <small class="fragment">What was the first solution you came up with?</small>
           </section>
           <section>
             <h3>Task 8</h3>
@@ -553,8 +553,8 @@ list.get() // ['x', 'z']
               <h3>Bonus tasks</h3>
               <ol>
                 <li class="fragment">Add a search text input and filter the visible contacts by it. Persist the search text value in the root atom. <a href="https://www.npmjs.com/package/partial.lenses#L-filter">L.filter</a> will be useful.</li>
-                <li class="fragment">Add validation to the contact editing. Validate the email and phone number using the <a href="http://npmjs.com/package/partial.lenses.validation">partial.lenses.validation</a> library.</li>
                 <li class="fragment">Persist the root contact atom in local storage using the <a href="http://npmjs.com/package/partial.lenses.validation">atom.storage</a> library.</li>
+                <li class="fragment">Add validation to the contact editing. Validate the email and phone number using the <a href="http://npmjs.com/package/partial.lenses.validation">partial.lenses.validation</a> library.</li>
               </ol>
             </small>
           </section>
