@@ -311,7 +311,7 @@ const Counter = ({ count = Atom(0) }) =>
     &lt;button onClick={() =&gt; count.modify(R.add(1))}&gt;+&lt;/button&gt;
   &lt;/span&gt;
             </code></pre>
-            <small class="fragment">Having the count atom as a parameter makes it easy to use the component with local or global state</small>
+            <small class="fragment">Having the count atom as a parameter makes it easy to use the component with local or global (external) state, ultimately making the component more composeable.</small>
             <pre class="fragment"><code data-trim class="jsx">
 &lt;Counter /&gt;
             </code></pre>
